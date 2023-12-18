@@ -1,0 +1,62 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using MyWebAPI.Models;
+
+namespace MyWebAPI.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductsController : ControllerBase
+    {
+        private static List<Product> _products = new List<Product>();
+
+        [HttpGet]
+        public IActionResult GetAllProducts()
+        {
+            return Ok(_products);
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetProductById(int id)
+        {
+            var product = _products.Find(p => p.Id == id);
+            if (product == null)
+                return NotFound();
+
+            return Ok(product);
+        }
+
+        [HttpPost]
+        public IActionResult AddProduct(Product product)
+        {
+            product.Id = Guid.NewGuid().GetHashCode();
+            _products.Add(product);
+            return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateProduct(int id, Product updatedProduct)
+        {
+            var productIndex = _products.FindIndex(p => p.Id == id);
+            if (productIndex < 0)
+                return NotFound();
+
+            updatedProduct.Id = id;
+            _products[productIndex] = updatedProduct;
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteProduct(int id)
+        {
+            var product = _products.Find(p => p.Id == id);
+            if (product == null)
+                return NotFound();
+
+            _products.Remove(product);
+            return NoContent();
+        }
+    }
+}
